@@ -53,8 +53,8 @@
   </dependencies>
 
   <scm>
-    <connection>scm:git:emma-nl@gitrepo.hypoport.local:repos/emma-stater-fa.git</connection>
-    <developerConnection>scm:git:emma-nl@gitrepo.hypoport.local:repos/emma-stater-fa.git</developerConnection>
+    <connection>scm:git:git@github.com:ansgarkonermann/xslt-testing.git</connection>
+    <developerConnection>scm:git:git@github.com:ansgarkonermann/xslt-testing.git</developerConnection>
   </scm>
 
 </project>
