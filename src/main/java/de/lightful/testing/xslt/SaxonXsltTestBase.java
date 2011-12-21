@@ -1,6 +1,7 @@
 package de.lightful.testing.xslt;
 
 import net.sf.saxon.TransformerFactoryImpl;
+import org.testng.*;
 
 import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamSource;
@@ -22,7 +23,6 @@ public abstract class SaxonXsltTestBase implements IHookable {
     return stylesheet;
   }
 
-  @Override
   public void run(IHookCallBack iHookCallBack, ITestResult iTestResult) {
     final StylesheetPerTestCase stylesheetPerTestCase = getEffectiveAnnotation(iTestResult, StylesheetPerTestCase.class);
     final Stylesheet stylesheet = getEffectiveAnnotation(iTestResult, Stylesheet.class);
