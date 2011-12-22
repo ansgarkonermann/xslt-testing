@@ -1,4 +1,4 @@
-package de.lightful.testing.xslt;
+package de.lightful.testing.xslt.internal;
 
 import java.net.URL;
 
@@ -13,7 +13,7 @@ public class ResourceResolverUtil {
     return resourceUrl;
   }
 
-  static URL tryToResolveAgainstBase(String href, String base, String resourceBasePath) {
+  public static URL tryToResolveAgainstBase(String href, String base, String resourceBasePath) {
     String adjustedBase;
     if (base.length() > 0) {
       adjustedBase = resourceBasePath + "/" + base;
@@ -23,7 +23,6 @@ public class ResourceResolverUtil {
     }
 
     final String resourcePath = adjustedBase + "/" + href;
-    final URL resourceUrl = ResourceResolverUtil.class.getResource(resourcePath);
-    return resourceUrl;
+    return ResourceResolverUtil.class.getResource(resourcePath);
   }
 }

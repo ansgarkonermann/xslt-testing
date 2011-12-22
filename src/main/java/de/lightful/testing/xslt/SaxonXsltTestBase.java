@@ -1,21 +1,28 @@
 package de.lightful.testing.xslt;
 
+import de.lightful.testing.xslt.internal.BaseResourceUriResolver;
+import de.lightful.testing.xslt.internal.ServiceRegistry;
 import net.sf.saxon.TransformerFactoryImpl;
 import org.testng.*;
 
 import javax.xml.transform.*;
-import javax.xml.transform.stream.StreamSource;
 import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Formatter;
 
-import static de.lightful.testing.xslt.ResourceResolverUtil.resolveResource;
+import static de.lightful.testing.xslt.internal.ResourceResolverUtil.resolveResource;
 
 public abstract class SaxonXsltTestBase implements IHookable {
 
-  public static final String TRANSFORMER_FACTORY_KEY = "javax.xml.transform.TransformerFactory";
+  private static final String TRANSFORMER_FACTORY_KEY = "javax.xml.transform.TransformerFactory";
+
+  private SourceFactory sourceFactory = ServiceRegistry.getServiceInstance(SourceFactory.class);
+
+  protected SourceFactory sourceFactory() {
+    return sourceFactory;
+  }
 
   private Templates stylesheet;
 
@@ -71,7 +78,7 @@ public abstract class SaxonXsltTestBase implements IHookable {
   private Templates loadStylesheetPerTestCase(StylesheetPerTestCase stylesheetPerTestCase, TransformerFactory factory) {
     String stylesheetText = createStylesheetText(stylesheetPerTestCase);
     try {
-      Source transformationSource = createSourceFromString(stylesheetText);
+      Source transformationSource = sourceFactory.createFromString(stylesheetText);
       return factory.newTemplates(transformationSource);
     }
     catch (TransformerConfigurationException e) {
@@ -153,7 +160,7 @@ public abstract class SaxonXsltTestBase implements IHookable {
       throw new TestNGException("Test " + getClass().getSimpleName() + " must use @" + Stylesheet.class.getSimpleName() + ".literal to define stylesheet to use, since no stylesheet resource is given");
     }
     try {
-      Source transformationSource = createSourceFromString(stylesheetAnnotation.literal());
+      Source transformationSource = sourceFactory.createFromString(stylesheetAnnotation.literal());
       return factory.newTemplates(transformationSource);
     }
     catch (TransformerConfigurationException e) {
@@ -182,51 +189,16 @@ public abstract class SaxonXsltTestBase implements IHookable {
     return testClass.getAnnotation(annotationClass);
   }
 
-  protected static Source createSourceFromString(String inputXml) {
-    StringReader inputStringReader = new StringReader(inputXml);
-    return new StreamSource(inputStringReader);
-  }
-
-  protected static Source createSourceFromFile(File file) throws IOException {
-    FileReader inputStringReader = new FileReader(file);
-    return new StreamSource(inputStringReader);
-  }
-
-  protected Source createSourceFromResourceUrl(URL resourcePath) throws IOException {
-    InputStream inputStream = resourcePath.openStream();
-    Assert.assertNotNull(inputStream, "Resource named " + resourcePath + " not found.");
-    return new StreamSource(inputStream);
-  }
-
-  protected StylesheetRunner runStylesheet(Templates stylesheet) throws TransformerException {
-    return new StylesheetRunner(stylesheet);
-  }
-
   private Templates createTemplates(final String transformationFileName, String[] resourceBasePath, TransformerFactory factory) throws TransformerConfigurationException {
     final URL resourceUrl = resolveResource(transformationFileName, "", resourceBasePath);
     if (resourceUrl == null) { return null; }
 
     try {
-      Source transformationSource = createSourceFromResourceUrl(resourceUrl);
+      Source transformationSource = sourceFactory.createSourceFromResourceUrl(resourceUrl);
       return factory.newTemplates(transformationSource);
     }
     catch (IOException e) {
       throw new TransformerConfigurationException("Cannot open transformation " + transformationFileName, e);
     }
-  }
-
-  protected String xmlTests(String... testCases) {
-
-    StringBuilder builder = new StringBuilder();
-    builder.append("<tests>");
-    for (String testCase : testCases) {
-      builder.append(testCase);
-    }
-    builder.append("</tests>");
-    return builder.toString();
-  }
-
-  protected String xmlTestCase(String testCaseContent) {
-    return "<testcase>" + testCaseContent + "</testcase>";
   }
 }
